@@ -1,0 +1,14 @@
+{
+  "mongo": {
+    "auth": {
+      "database": "mongodb",
+      "password": "haraldtest24",
+      "user": "tomharaldtestmytest"
+    },
+    "ip": "127.0.0.1",
+    "port": "27888",
+    "type": "single"
+  },
+  "name": "tg-codenames",
+  "port": 3300
+}

@@ -1,0 +1,1 @@
+export const BOARD_REPOSITORY = Symbol('BOARD_REPOSITORY');

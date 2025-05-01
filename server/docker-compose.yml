@@ -1,0 +1,21 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo:4.4
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=tommytest
+      - MONGO_INITDB_ROOT_PASSWORD=tommytest19
+    volumes:
+      - ./docker/data/mongodb:/data/db
+    ports:
+      - "27888:27017"
+    network_mode: bridge
+  redis:
+    image: redis:6.2.5-buster
+    restart: unless-stopped
+    ports:
+      - "36379:6379"
+    command: >
+      --requirepass password123
+    network_mode: bridge
