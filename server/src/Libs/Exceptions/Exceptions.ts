@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 
-import { ExceptionBase, ExceptionCodes } from '.';
+import { ExceptionBase } from '@Libs/Exceptions/Exception.base';
+import { ExceptionCodes } from '@Libs/Exceptions/Exception.codes';
 
 export class ArgumentInvalidException extends ExceptionBase {
   public readonly code = ExceptionCodes.ArgumentInvalid;

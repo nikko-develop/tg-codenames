@@ -53,6 +53,9 @@ export default defineConfig([
             ['^@Infrastructure'],
             ['^@Libs'],
             ['^@ValueObjects'],
+            ['^@Modules'],
+            ['^@Utils'],
+            ['^@Scripts'],
             ['^\\.\\.(?!/?$)', '^\\.\\./?$'],
             ['^\\./(?=.*/)(?!/?$)', '^\\.(?!/?$)', '^\\./?$'],
             ['^.+\\.s?css$'],
@@ -60,15 +63,36 @@ export default defineConfig([
         },
       ],
       'import/order': 'off',
-
       'no-empty-function': 'off',
-
       'prettier/prettier': [
         'error',
         {
           endOfLine: 'auto',
         },
       ],
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-expect-error': { descriptionFormat: '^: TS\\d+ .+$' },
+        },
+      ],
+
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        {
+          accessibility: 'explicit',
+          overrides: {
+            constructors: 'no-public',
+            methods: 'explicit',
+            properties: 'explicit',
+            parameterProperties: 'explicit',
+          },
+        },
+      ],
+
+      '@typescript-eslint/member-ordering': ['error', { default: ['signature', 'field', 'constructor', 'method'] }],
+
+      '@typescript-eslint/adjacent-overload-signatures': 'error',
 
       '@typescript-eslint/no-empty-function': ['off'],
       '@typescript-eslint/interface-name-prefix': 'off',

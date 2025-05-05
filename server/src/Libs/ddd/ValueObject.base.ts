@@ -12,7 +12,7 @@ export type ValueObjectProps<T> = T extends Date | Primitives ? DomainPrimitive<
 export abstract class ValueObject<T> {
   protected readonly props: ValueObjectProps<T>;
 
-  public constructor(props: ValueObjectProps<T>) {
+  constructor(props: ValueObjectProps<T>) {
     this.validate(props);
     this.props = props;
   }

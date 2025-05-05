@@ -8,7 +8,7 @@ import { Mapper } from '@Libs/ddd/Mapper.interface';
 
 @Injectable()
 export class TeamMapper implements Mapper<TeamEntity, TeamRecord> {
-  public constructor() {}
+  constructor() {}
   public toPersistence(entity: TeamEntity): TeamRecord {
     const propsCopy = entity.getPropsCopy();
     return {

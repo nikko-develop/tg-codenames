@@ -11,7 +11,7 @@ import { ExceptionResponseDto } from '@Libs/Exceptions/Exception.response.dto';
 export class MongoExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(MongoExceptionsFilter.name);
 
-  public constructor(protected readonly host: HttpAdapterHost) {}
+  constructor(protected readonly host: HttpAdapterHost) {}
 
   public async catch(exception: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();

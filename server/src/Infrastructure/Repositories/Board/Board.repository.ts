@@ -12,13 +12,14 @@ import { BoardDocument, BoardRecord } from '@Infrastructure/Repositories/Board/B
 import { MongoRepository } from '@Infrastructure/Repositories/MongoDB/Mongo.repository';
 
 import { NotFoundException } from '@Libs/Exceptions';
+import { PaginatedQueryParams } from '@Libs/Ports/ReadRepositoryPort.base';
 import { ObjectLiteral } from '@Libs/types/ObjectLiteral.type';
 
 @Injectable()
 export class BoardRepository extends MongoRepository<BoardEntity, BoardRecord> implements BoardRepositoryPort {
   protected readonly logger = new Logger(BoardRepository.name);
 
-  public constructor(
+  constructor(
     protected readonly mapper: BoardMapper,
     @InjectModel(BoardRecord.name) protected readonly model: Model<BoardDocument>,
   ) {
@@ -47,21 +48,31 @@ export class BoardRepository extends MongoRepository<BoardEntity, BoardRecord> i
     });
   }
 
-  public async findManyBy(filter: ObjectLiteral, page?: number, perPage?: number): Promise<BoardEntity[]> {
-    const boards = await this.processFindMany({
-      $or: [
-        ...Object.entries(filter).map(([key, value]) => ({
-          [key]: {
-            $regex: value,
-            $options: 'i',
-          },
-        })),
-      ],
-    });
-
-    if (page && perPage) {
-      return this.processSlicePagination(boards, page, perPage);
-    }
+  public async findManyBy(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: BoardEntity[]; count: number }> {
+    const boards = await this.processFindMany(
+      {
+        $or: [
+          ...Object.entries(filter).map(([key, value]) =>
+            !Array.isArray(value)
+              ? {
+                  [key]: {
+                    $regex: value,
+                    $options: 'i',
+                  },
+                }
+              : {
+                  [key]: {
+                    $in: value,
+                  },
+                },
+          ),
+        ],
+      },
+      pagination,
+    );
 
     return boards;
   }
@@ -103,14 +114,17 @@ export class BoardRepository extends MongoRepository<BoardEntity, BoardRecord> i
     return this.mapper.toDomain(boardRecord);
   }
 
-  private async processFindMany(filter: ObjectLiteral): Promise<BoardEntity[]> {
-    const boardRecords = await this.model.find(filter).lean();
-    return boardRecords.map((record) => this.mapper.toDomain(record));
-  }
-
-  private processSlicePagination(boards: BoardEntity[], page: number, perPage: number): BoardEntity[] {
-    const offset = (page - 1) * perPage;
-
-    return boards.slice(offset, offset + perPage);
+  private async processFindMany(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: BoardEntity[]; count: number }> {
+    const boardRecords = pagination
+      ? await this.model.find(filter).skip(pagination.offset).limit(pagination.limit).sort(pagination.orderBy).lean()
+      : await this.model.find(filter).lean();
+    const count = await this.model.countDocuments();
+    return {
+      data: boardRecords.map((record) => this.mapper.toDomain(record)),
+      count: count,
+    };
   }
 }

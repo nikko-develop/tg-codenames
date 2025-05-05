@@ -25,7 +25,7 @@ export abstract class DomainEvent {
 
   public abstract eventType: string;
 
-  public constructor(props: DomainEventProps<unknown>) {
+  constructor(props: DomainEventProps<unknown>) {
     if (Guard.isEmpty(props)) {
       throw new ArgumentNotProvidedException('DomainEvent props should not be empty.');
     }

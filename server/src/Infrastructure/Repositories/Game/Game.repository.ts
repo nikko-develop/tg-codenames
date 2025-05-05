@@ -12,13 +12,14 @@ import { GameDocument, GameRecord } from '@Infrastructure/Repositories/Game/Game
 import { MongoRepository } from '@Infrastructure/Repositories/MongoDB/Mongo.repository';
 
 import { NotFoundException } from '@Libs/Exceptions';
+import { PaginatedQueryParams } from '@Libs/Ports/ReadRepositoryPort.base';
 import { ObjectLiteral } from '@Libs/types/ObjectLiteral.type';
 
 @Injectable()
 export class GameRepository extends MongoRepository<GameEntity, GameRecord> implements GameRepositoryPort {
   protected readonly logger = new Logger(GameRepository.name);
 
-  public constructor(
+  constructor(
     protected readonly mapper: GameMapper,
     @InjectModel(GameRecord.name) protected readonly model: Model<GameDocument>,
   ) {
@@ -47,23 +48,33 @@ export class GameRepository extends MongoRepository<GameEntity, GameRecord> impl
     });
   }
 
-  public async findManyBy(filter: ObjectLiteral, page?: number, perPage?: number): Promise<GameEntity[]> {
-    const Games = await this.processFindMany({
-      $or: [
-        ...Object.entries(filter).map(([key, value]) => ({
-          [key]: {
-            $regex: value,
-            $options: 'i',
-          },
-        })),
-      ],
-    });
+  public async findManyBy(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: GameEntity[]; count: number }> {
+    const games = await this.processFindMany(
+      {
+        $or: [
+          ...Object.entries(filter).map(([key, value]) =>
+            !Array.isArray(value)
+              ? {
+                  [key]: {
+                    $regex: value,
+                    $options: 'i',
+                  },
+                }
+              : {
+                  [key]: {
+                    $in: value,
+                  },
+                },
+          ),
+        ],
+      },
+      pagination,
+    );
 
-    if (page && perPage) {
-      return this.processSlicePagination(Games, page, perPage);
-    }
-
-    return Games;
+    return games;
   }
 
   public async existsBy(filter: GameSearchParams): Promise<boolean> {
@@ -103,14 +114,17 @@ export class GameRepository extends MongoRepository<GameEntity, GameRecord> impl
     return this.mapper.toDomain(gameRecord);
   }
 
-  private async processFindMany(filter: ObjectLiteral): Promise<GameEntity[]> {
-    const gameRecords = await this.model.find(filter).lean();
-    return gameRecords.map((record) => this.mapper.toDomain(record));
-  }
-
-  private processSlicePagination(games: GameEntity[], page: number, perPage: number): GameEntity[] {
-    const offset = (page - 1) * perPage;
-
-    return games.slice(offset, offset + perPage);
+  private async processFindMany(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: GameEntity[]; count: number }> {
+    const gameRecords = pagination
+      ? await this.model.find(filter).skip(pagination.offset).limit(pagination.limit).sort(pagination.orderBy).lean()
+      : await this.model.find(filter).lean();
+    const count = await this.model.countDocuments();
+    return {
+      data: gameRecords.map((record) => this.mapper.toDomain(record)),
+      count: count,
+    };
   }
 }

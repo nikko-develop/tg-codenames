@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common';
+import { Logger, Module, Provider } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { USER_REPOSITORY } from '@Infrastructure/Repositories/User/User.di.tokens';
@@ -17,7 +17,7 @@ const mappers: Provider[] = [UserMapper];
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: UserRecord.name, schema: UserSchema }])],
-  providers: [...repositories, ...mappers],
+  providers: [Logger, ...repositories, ...mappers],
   exports: [...repositories, ...mappers],
 })
 export class UserRepositoryModule {}

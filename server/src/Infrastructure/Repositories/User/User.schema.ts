@@ -9,6 +9,8 @@ export type UserDocument = HydratedDocument<UserRecord>;
 export class UserRecord extends MongoSchemaBase {
   @Prop()
   public nickname: string;
+  @Prop()
+  public passwordHash: string;
   @Prop({ type: [String] })
   public teamCodes: string[];
 }

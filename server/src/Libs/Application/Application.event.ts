@@ -21,7 +21,7 @@ export abstract class ApplicationEvent {
 
   public abstract eventType: string;
 
-  public constructor(props: ApplicationEventProps<unknown>) {
+  constructor(props: ApplicationEventProps<unknown>) {
     if (Guard.isEmpty(props)) {
       throw new ArgumentNotProvidedException('Application event props should not be empty.');
     }

@@ -10,7 +10,7 @@ import { getAbstractExceptionClass, InternalServerErrorException } from './Excep
 export class AllExceptionsFilter extends BaseExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  public constructor(protected readonly httpAdapterHost: HttpAdapterHost) {
+  constructor(protected readonly httpAdapterHost: HttpAdapterHost) {
     super();
   }
 

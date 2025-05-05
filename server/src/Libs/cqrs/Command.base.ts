@@ -4,16 +4,16 @@ import { RequestContextService } from '@Libs/Application/AppRequestContext';
 import { ArgumentNotProvidedException } from '@Libs/Exceptions';
 import { Guard } from '@Libs/Guard';
 
-export type CommandProps<T> = Omit<T, 'correlationId' | 'id'> & Partial<Command>;
+export type CommandProps<T> = Omit<T, 'correlationId' | 'id'> & Partial<CommandBase>;
 
-export class Command {
+export class CommandBase {
   public readonly id: string;
 
   public readonly correlationId: string;
 
   public readonly causationId?: string;
 
-  public constructor(props: CommandProps<unknown>) {
+  constructor(props: CommandProps<unknown>) {
     if (Guard.isEmpty(props)) {
       throw new ArgumentNotProvidedException('Command props should not be empty.');
     }

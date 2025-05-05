@@ -19,7 +19,7 @@ export abstract class ExceptionBase extends Error {
 
   public readonly correlationId: string;
 
-  public constructor(
+  constructor(
     public readonly message: string,
     public readonly cause?: Error,
     public readonly metadata?: unknown,

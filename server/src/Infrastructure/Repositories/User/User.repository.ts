@@ -12,13 +12,14 @@ import { UserMapper } from '@Infrastructure/Repositories/User/User.mapper';
 import { UserDocument, UserRecord } from '@Infrastructure/Repositories/User/User.schema';
 
 import { NotFoundException } from '@Libs/Exceptions';
+import { Paginated, PaginatedQueryParams } from '@Libs/Ports/ReadRepositoryPort.base';
 import { ObjectLiteral } from '@Libs/types/ObjectLiteral.type';
 
 @Injectable()
 export class UserRepository extends MongoRepository<UserEntity, UserRecord> implements UserRepositoryPort {
   protected readonly logger = new Logger(UserRepository.name);
 
-  public constructor(
+  constructor(
     protected readonly mapper: UserMapper,
     @InjectModel(UserRecord.name) protected readonly model: Model<UserDocument>,
   ) {
@@ -47,21 +48,31 @@ export class UserRepository extends MongoRepository<UserEntity, UserRecord> impl
     });
   }
 
-  public async findManyBy(filter: ObjectLiteral, page?: number, perPage?: number): Promise<UserEntity[]> {
-    const users = await this.processFindMany({
-      $or: [
-        ...Object.entries(filter).map(([key, value]) => ({
-          [key]: {
-            $regex: value,
-            $options: 'i',
-          },
-        })),
-      ],
-    });
-
-    if (page && perPage) {
-      return this.processSlicePagination(users, page, perPage);
-    }
+  public async findManyBy(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: UserEntity[]; count: number }> {
+    const users = await this.processFindMany(
+      {
+        $or: [
+          ...Object.entries(filter).map(([key, value]) =>
+            !Array.isArray(value)
+              ? {
+                  [key]: {
+                    $regex: value,
+                    $options: 'i',
+                  },
+                }
+              : {
+                  [key]: {
+                    $in: value,
+                  },
+                },
+          ),
+        ],
+      },
+      pagination,
+    );
 
     return users;
   }
@@ -103,14 +114,17 @@ export class UserRepository extends MongoRepository<UserEntity, UserRecord> impl
     return this.mapper.toDomain(userRecord);
   }
 
-  private async processFindMany(filter: ObjectLiteral): Promise<UserEntity[]> {
-    const userRecords = await this.model.find(filter).lean();
-    return userRecords.map((record) => this.mapper.toDomain(record));
-  }
-
-  private processSlicePagination(users: UserEntity[], page: number, perPage: number): UserEntity[] {
-    const offset = (page - 1) * perPage;
-
-    return users.slice(offset, offset + perPage);
+  private async processFindMany(
+    filter: ObjectLiteral,
+    pagination?: PaginatedQueryParams,
+  ): Promise<{ data: UserEntity[]; count: number }> {
+    const userRecords = pagination
+      ? await this.model.find(filter).skip(pagination.offset).limit(pagination.limit).sort(pagination.orderBy).lean()
+      : await this.model.find(filter).lean();
+    const count = await this.model.countDocuments();
+    return {
+      data: userRecords.map((record) => this.mapper.toDomain(record)),
+      count: count,
+    };
   }
 }

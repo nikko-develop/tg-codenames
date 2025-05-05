@@ -52,7 +52,6 @@ export abstract class MongoRepository<Aggregate extends Entity<unknown>, DbModel
 
   public async delete(entity: Aggregate): Promise<boolean> {
     const record = this.mapper.toPersistence(entity);
-    // TODO: Check if it can be typed
 
     const result = await this.model.deleteOne({ id: record.id }).exec();
 
@@ -60,13 +59,13 @@ export abstract class MongoRepository<Aggregate extends Entity<unknown>, DbModel
   }
 
   private async paginate(query: Query<DbModel[], DbModel>, paging: PaginatedQueryParams): Promise<Paginated<DbModel>> {
-    const { perPage = 20, page = 1 } = paging;
-    const skipCount = (page - 1) * perPage;
+    const { limit = 20, page = 1 } = paging;
+    const skipCount = (page - 1) * limit;
 
     const [data, totalCount] = await Promise.all([
-      query.clone().limit(perPage).skip(skipCount).exec(),
+      query.clone().limit(limit).skip(skipCount).exec(),
       query.clone().countDocuments(),
     ]);
-    return { data, page, perPage, totalCount };
+    return { data, page, limit, count: totalCount };
   }
 }

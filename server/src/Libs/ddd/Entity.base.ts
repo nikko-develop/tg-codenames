@@ -23,7 +23,7 @@ export abstract class Entity<EntityProps> {
   private readonly _createdAt: Date;
   private _updatedAt: Date;
 
-  public constructor({ id, createdAt, updatedAt, props }: CreateEntityProps<EntityProps>) {
+  constructor({ id, createdAt, updatedAt, props }: CreateEntityProps<EntityProps>) {
     this.validateProps(props);
 
     const now = new Date(Date.now());

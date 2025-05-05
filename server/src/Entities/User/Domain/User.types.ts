@@ -1,5 +1,6 @@
 export interface UserProps {
   nickname: string;
+  passwordHash: string;
   teamCodes: string[];
 }
 

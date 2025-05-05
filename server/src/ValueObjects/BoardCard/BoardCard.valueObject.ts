@@ -1,4 +1,4 @@
-import { ValueObject, ValueObjectProps } from '@Libs/cqrs/ValueObject.base';
+import { ValueObject, ValueObjectProps } from '@Libs/ddd/ValueObject.base';
 
 import { BoardCardProps } from '@ValueObjects/BoardCard/BoardCard.types';
 

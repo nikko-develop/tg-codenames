@@ -15,6 +15,7 @@ export class UserMapper implements Mapper<UserEntity, UserRecord> {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       nickname: propsCopy.nickname,
+      passwordHash: propsCopy.passwordHash,
       teamCodes: propsCopy.teamCodes,
     };
   }
@@ -23,6 +24,7 @@ export class UserMapper implements Mapper<UserEntity, UserRecord> {
     return UserEntity.create(
       {
         nickname: record.nickname,
+        passwordHash: record.passwordHash,
         teamCodes: record.teamCodes,
       },
       record.id,

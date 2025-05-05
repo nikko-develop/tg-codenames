@@ -1,7 +1,8 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
+
 import { RequestContextService } from '@Libs/Application/AppRequestContext';
 import { DomainEvent } from '@Libs/ddd/DomainEvent.base';
 import { Entity } from '@Libs/ddd/Entity.base';
-import { eventEmitter } from '@Libs/EventEmitter/EventEmitter';
 import { LoggerPort } from '@Libs/Ports/Logger.port';
 
 export abstract class AggregateRoot<EntityProps> extends Entity<EntityProps> {
@@ -11,11 +12,7 @@ export abstract class AggregateRoot<EntityProps> extends Entity<EntityProps> {
     return this._domainEvents;
   }
 
-  public async emitEvent(domainEvent: DomainEvent) {
-    return eventEmitter.emitAsync(domainEvent.eventType, domainEvent);
-  }
-
-  public addEvent(domainEvent: DomainEvent): void {
+  protected addEvent(domainEvent: DomainEvent): void {
     this._domainEvents.push(domainEvent);
   }
 
@@ -23,15 +20,15 @@ export abstract class AggregateRoot<EntityProps> extends Entity<EntityProps> {
     this._domainEvents = [];
   }
 
-  public async publishEvents(logger: LoggerPort): Promise<void> {
+  public async publishEvents(logger: LoggerPort, eventEmitter: EventEmitter2): Promise<void> {
     await Promise.all(
       this.domainEvents.map(async (event) => {
         logger.debug(
-          `[${RequestContextService.getRequestId()}] "${event.eventType}" event published for aggregate ${
+          `[${RequestContextService.getRequestId()}] "${event.constructor.name}" event published for aggregate ${
             this.constructor.name
           } : ${this.id}`,
         );
-        return eventEmitter.emitAsync(event.eventType, event);
+        return eventEmitter.emitAsync(event.constructor.name, event);
       }),
     );
     this.clearEvents();
